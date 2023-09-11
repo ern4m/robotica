@@ -24,14 +24,27 @@ def vec3_zeros(point):
     return p
     
 def rotate(angle, point):
-    angle = np.radians(angle)
-    c, s = np.cos(angle), np.sin(angle)
-    
     if point.shape == (3,3):
-        p = point[:, 2][0:2]
+        p = get_point(point)
+        new_angle = 0
+        old_angle = int(np.degrees(np.arccos(point[0][0])).round())
+        print(f"old angle: {old_angle}")
+        if old_angle == 0:
+            new_angle = angle
+            print(f"new angle if: {new_angle}")
+            # print(f"new angle: {new_angle}")
+        else:
+            new_angle = angle + old_angle
+            print(f"new angle else: {new_angle}")
+        print(f"new angle: {new_angle}")
+        c, s = np.cos(np.radians(new_angle)), np.sin(np.radians(new_angle))
+        print(c,s)
         m_rotate = np.array([[c, -s, p[0]], [s, c, p[1]], [0, 0, 1]])
+        print(m_rotate)
         return m_rotate
     else:
+        angle = np.radians(angle)
+        c, s = np.cos(angle), np.sin(angle)
         m_rotate = np.array([[c, -s, point[0]], [s, c, point[1]], [0, 0, 1]])
         return m_rotate
  
@@ -98,6 +111,11 @@ def plot(points):
 def parse_vec(vec):
     return vec.split(",")
 
+def log(hist):
+    print(len(hist))
+    for i in hist:
+        print(i,"\n")
+
 def main():
     hist = []
 
@@ -112,16 +130,16 @@ def main():
             vec = parse_vec(vec)
             _p = translate(vec, hist[-1])
             hist.append(_p)
+            log(hist)
         elif selection == "1":
             angle = input("Insert the rotation angle:\n> ")
             _p = rotate(int(angle), hist[-1])
             hist.append(_p)
+            log(hist)
         elif selection == "2":
             plot(hist)
         elif selection == "3":
-            print(len(hist))
-            for i in hist:
-                print(i,"\n")
+            log(hist)
         elif selection == "4":
             break
 
