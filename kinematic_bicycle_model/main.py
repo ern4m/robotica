@@ -8,12 +8,15 @@ from dataclasses import dataclass
 println = builtins.print
 
 # gamma = None
-# max_gamma = 30
+# max_gamma = 1
 # delta_time = 0.05
 # v = 1
 # theta = lambda v, gamma :( v * np.tan(gamma))/ L
 # x = lambda v, theta : v * np.cos(np.radians(theta))
 # y = lambda v, theta : v * np.sin(np.radians(theta))
+
+# normalize angle
+normalize_angle = lambda angle: np.arctan2(np.sin(angle), np.cos(angle))
 
 @dataclass
 class Model:
@@ -29,12 +32,12 @@ class Model:
 
         # gamma changes
         if gamma < -self.max_gamma:
-            gamma = -self.max_gamma
+            gamma = np.radians(-self.max_gamma)
         else:
             if gamma > self.max_gamma:
-                gamma = self.max_gamma
+                gamma = np.radians(self.max_gamma)
             else:
-                gamma = gamma
+                gamma = np.radians(gamma)
         
         # coords changes
         _x = x + velocity*np.cos(theta) * self.delta_time
@@ -43,7 +46,12 @@ class Model:
 
         # theta change
         # _theta = int(np.degrees((velocity / self.base) * np.tan(gamma)))
-        _theta = (velocity / self.base) * np.tan(gamma)
+
+        # theta normalized
+        # _theta = normalize_angle(theta + (velocity / self.base) * np.tan(gamma) * self.delta_time)
+
+        # theta not normalized
+        _theta = theta + (velocity / self.base) * np.tan(gamma) * self.delta_time
 
         return (_x, _y ,_theta)
 
@@ -56,13 +64,17 @@ theta = []
 
 size = 40
 
-# gamma = list(map(lambda x: x*np.random.choice(range(-30,30,1)), np.random.choice([0,1], size=(size,))))
+## gamma input tests
 
-gamma = np.random.choice(range(-30,30,1), size=(size,))
+gamma = list(map(lambda x: x*np.random.choice(range(-30,30,1)), np.random.choice([0,1], size=(size,))))
 
-# gamma = np.ones(size)*30
+# gamma = np.random.choice(np.arange(-30,30,0.1), size=(size,))
+# gamma = np.linspace(0., 40., size)
+# gamma = np.ones(size)*10
+# gamma = list(map(lambda x: x*np.random.choice(range(-30,30)), [0, 0, 0, 1, 1, 0, -1, -1, 0, 0, 0, 0]))
+# gamma = [1, 1, 1, 1, 1]
 
-# gamma = [0, 0, 0, 1, 0, -1, 1, 0, 0, 0, 0] * 30
+print(gamma)
 
 for k in range(len(gamma)):
     if len(x) == 0:
@@ -84,7 +96,7 @@ for k in range(len(gamma)):
 fig, ax = plt.subplots()
 
 line = ax.plot(x[0],y[0])[0]
-ax.set(xlim=[0, 40], ylim=[-5, 5], xlabel='x', ylabel='y')
+ax.set(xlim=[-10, 40], ylim=[-10, 10], xlabel='x', ylabel='y')
 ax.legend()
 
 def update(frame):
@@ -95,7 +107,7 @@ def update(frame):
     # scatter
     data = np.stack([_x, _y])
 
-
+    print(f"x: {x[frame]} | y: {y[frame]} | theta: {np.degrees(theta[frame])} | gamma: {gamma[frame]}")
     # update the line plot:
     line.set_xdata(x[:frame])
     line.set_ydata(y[:frame])
